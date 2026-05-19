@@ -1,0 +1,19 @@
+---
+description: IDOLL AV person identification — project context and standards
+alwaysApply: true
+---
+
+# IDOLL AV Sync — Always read full context first
+
+Before implementing or advising on this repo, read **`docs/PROJECT_CONTEXT.md`** (authoritative source for goals, structure, libraries, build order, and code standards).
+
+## Quick reference
+
+- **Goal:** Real-time multimodal person ID (face + voice) for IDOLL companion robot; enrollment-based, no training.
+- **Modes:** `enroll` (capture embeddings → JSON DB) and `recognize` (continuous match + fuse scores → text).
+- **Build order:** Week 1 `enrollment/` → Week 2 `vision/` → Week 3 `audio/` → Week 4 `sync/` + `response/` + `main.py`.
+- **Stack:** `face_recognition`, `resemblyzer`, `sounddevice`, `opencv-python`, `numpy`, `torch` (CUDA optional).
+- **Standards:** Type hints, docstrings, per-module `__main__` tests, log decisions in `docs/research_log.md`, no notebooks.
+- **Workflow:** One module at a time; explain concepts first; flag decisions for Isaac; minimize scope.
+
+When unsure about architecture or priorities, defer to `docs/PROJECT_CONTEXT.md` rather than improvising.
