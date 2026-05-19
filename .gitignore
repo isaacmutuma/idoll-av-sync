@@ -1,0 +1,18 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+
+# Embeddings database (local enrollments — do not commit personal data)
+data/
+*.db
+
+# IDE
+.idea/
+.vscode/
