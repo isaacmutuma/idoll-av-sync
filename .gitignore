@@ -11,6 +11,7 @@ venv/
 
 # Embeddings database (local enrollments — do not commit personal data)
 data/
+enrollment/database.json
 *.db
 
 # IDE
