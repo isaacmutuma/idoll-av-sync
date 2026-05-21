@@ -12,7 +12,9 @@ import time
 from pathlib import Path
 
 import cv2
-import face_recognition
+import mediapipe as mp
+import insightface
+from insightface.app import FaceAnalysis
 import numpy as np
 import sounddevice as sd
 from resemblyzer import VoiceEncoder
@@ -32,7 +34,7 @@ except ImportError:
 
 CAPTURE_DURATION_SEC = 5.0
 VOICE_SAMPLE_RATE = 16000
-MIN_VOICE_RMS = 0.01
+MIN_VOICE_RMS = 0.001
 FACE_SAMPLE_INTERVAL_SEC = 0.2
 
 
@@ -80,24 +82,28 @@ def open_webcam(device_index: int = 0) -> cv2.VideoCapture:
     return capture
 
 
+# Initialize InsightFace model once at module level
+_face_app = FaceAnalysis(name="buffalo_sc", providers=["CPUExecutionProvider"])
+_face_app.prepare(ctx_id=0, det_size=(640, 640))
+
+
 def compute_face_embedding_from_frame(frame_bgr: np.ndarray) -> np.ndarray | None:
     """
-    Detect a face in one BGR frame and return its 128-d embedding.
+    Detect a face in one BGR frame and return its 512-d InsightFace embedding.
 
-    ``face_recognition`` expects RGB; OpenCV provides BGR, so we convert first.
+    Uses InsightFace buffalo_sc model — no dlib dependency, M2 compatible.
     Returns None if no face is found in the frame.
     """
-    frame_rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
-    locations = face_recognition.face_locations(frame_rgb, model="hog")
-    if not locations:
+    if frame_bgr is None or frame_bgr.size == 0:
         return None
 
-    encodings = face_recognition.face_encodings(frame_rgb, known_face_locations=locations)
-    if not encodings:
+    faces = _face_app.get(frame_bgr)
+    if not faces:
         return None
 
-    return np.asarray(encodings[0], dtype=np.float64)
-
+    # Take the largest face if multiple detected
+    largest_face = max(faces, key=lambda f: f.bbox[2] * f.bbox[3])
+    return np.asarray(largest_face.embedding, dtype=np.float64)
 
 def capture_face_embedding(
     capture: cv2.VideoCapture,
@@ -224,7 +230,7 @@ def enroll_person(
     waveform = record_voice_audio(capture_duration_sec)
     voice_embedding = compute_voice_embedding(waveform)
     print(f"Voice embedding captured ({VOICE_EMBEDDING_DIM}-d).")
-
+    #save the embeddings to the database.json 
     save_person(name, face_embedding, voice_embedding)
     print(f"Enrolled '{name}' → {Path(__file__).resolve().parent / 'database.json'}")
 
