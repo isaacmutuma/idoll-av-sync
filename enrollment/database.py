@@ -9,7 +9,7 @@ from typing import Any
 import numpy as np
 
 DATABASE_FILENAME = "database.json"
-FACE_EMBEDDING_DIM = 128
+FACE_EMBEDDING_DIM = 512
 VOICE_EMBEDDING_DIM = 256
 
 
