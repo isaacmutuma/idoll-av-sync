@@ -38,7 +38,7 @@ class LiveIDError(Exception):
 
 def open_camera(device_index: int = 0) -> cv2.VideoCapture:
     """
-    Open the webcam at ``device_index``.
+    Open the webcam at ``device_index``
 
     Args:
         device_index: OpenCV camera device index (default 0).
@@ -61,7 +61,7 @@ def open_camera(device_index: int = 0) -> cv2.VideoCapture:
 def collect_embeddings(
     cap: cv2.VideoCapture,
     n_frames: int = SAMPLE_FRAMES,
-    warmup: int = WARMUP_FRAMES,
+    warmup: int = WARMUP_FRAMES, 
 ) -> list[np.ndarray]:
     """
     Discard ``warmup`` frames to let the camera auto-expose, then collect
