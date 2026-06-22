@@ -31,7 +31,6 @@ from vision.face_id import _cosine_similarity, get_face_embedding, FACE_MATCH_TH
 WARMUP_FRAMES = 10
 SAMPLE_FRAMES = 5
 
-
 class LiveIDError(Exception):
     """Raised when live identification cannot proceed."""
 
