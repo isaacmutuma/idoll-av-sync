@@ -4,6 +4,25 @@ Technical decisions and rationale. Newest entries at the top.
 
 ---
 
+## 2026-06-23 — Score fusion (`sync/synchronizer.py`)
+
+**Decision:** Implement fusion as three explicit branches rather than a single formula:
+- **Both agree** → weighted average (face 0.6, voice 0.4). Face gets more weight because InsightFace 512-d embeddings consistently outperform Resemblyzer 256-d GE2E on same-identity cosine similarity in initial tests.
+- **One modality only** → use that score at full weight. Blending a 0.0 "no-match" score from the silent modality would artificially penalise single-modality detections (e.g. speaker off-camera or microphone background noise).
+- **Names disagree** → return lower of the two scores as a conservative estimate, set `uncertain=True`, prefer the higher-confidence modality's name. Callers can request re-identification on uncertain results.
+
+**Combined threshold:** 0.6 (same for all branches). Chosen to sit above the 0.5 per-modality voice threshold while leaving headroom for face-only and voice-only paths to trigger.
+
+**`FusionResult` dataclass:** Carries `name`, `confidence`, `method` label, and `uncertain` flag. The `method` string makes it easy to trace which branch fired during live demos without adding a logger.
+
+**`identify()` wrapper:** Returns `(name, confidence)` tuple matching the return convention of `face_id.identify_face` and `speaker_id.identify_speaker` so `main.py` can call all three uniformly.
+
+**Hardware dependency:** None. Module is fully headless — accepts plain floats and strings, never touches camera or microphone. Tests run without any hardware.
+
+**Alternatives considered:** Single weighted formula regardless of "Unknown" status (rejected — penalises valid single-modality results); Kalman filter over time (deferred to post-demo, adds statefulness complexity).
+
+---
+
 ## 2026-05-19 — Week 1 enrollment (`database.py`, `enroll.py`)
 
 **Decision:** Store all enrollments in a single `enrollment/database.json` keyed by person name. Each entry holds `face_embedding` (128 floats) and `voice_embedding` (256 floats). No raw images or audio on disk.
